@@ -111,12 +111,117 @@ function mostrarPlatillos(platillos) {
 }
 function agregarPlatillo(producto) {
     // EXTRAER PEDIDO ACTUAL 
-    let {pedido} = cliente; 
+    let { pedido } = cliente;
     // VALIDACIÓN DE CANTIDAD 
     if (producto.cantidad > 0) {
-        cliente.pedido = [...pedido, producto];
+        if (pedido.some(articulo => articulo.id === producto.id)) { //comprobar si el elemento ya existe en el array 
+            //Ya existe el articulo, actualizar cantidad 
+            const pedidoActualizado = pedido.map(articulo => {
+                if (articulo.id === producto.id) {
+                    articulo.cantidad = producto.cantidad;
+                }
+                return articulo;
+            }); //retorna un arreglo nuevo modificado  
+            //Se asigna el nuevo array a cliente.pedido 
+            cliente.pedido = [...pedidoActualizado];
+        } else {
+            //articulo no existe, lo agregarmos al array de pedido
+            cliente.pedido = [...pedido, producto];
+        }
     } else {
-        console.log('menor');
+        // ELIMINAR ELEMENTOS CUANDO LA CANTIDAD ES 0 
+        const resultado = pedido.filter(articulo => articulo.id != producto.id);
+        cliente.pedido = [...resultado];
     }
-    console.log(cliente.pedido);
+    // limpiar el codigo html previo 
+    limpiarHtml();
+    //   MOSTRAR EL RESUMEN 
+    actualizarResumen();
+}
+function actualizarResumen() {
+    const contenido = document.querySelector('#resumen .contenido');
+    const resumen = document.createElement('DIV');
+    resumen.classList.add('col-md-6', 'card', 'py-5', 'px-3', 'shadow');
+
+    const mesa = document.createElement('P');
+    mesa.textContent = 'Mesa: ';
+    mesa.classList.add('fw-bold');
+    const mesaSpam = document.createElement('SPAM');
+    mesaSpam.textContent = cliente.mesa;
+    mesaSpam.classList.add('fw-normal');
+
+    //INFORMACIÓN DE LA MESA
+    const hora = document.createElement('P');
+    hora.textContent = 'Hora: ';
+    hora.classList.add('fw-bold');
+    //información de la hora
+    const horaSpam = document.createElement('SPAM');
+    horaSpam.textContent = cliente.hora;
+    horaSpam.classList.add('fw-normal');
+
+    //Agregar a los elementos padre
+    mesa.appendChild(mesaSpam);
+    hora.appendChild(horaSpam);
+    // titulo de la sección 
+    const heading = document.createElement('H3');
+    heading.textContent = 'Platillos Consumidos';
+    heading.classList.add('my-4'), 'text-center';
+    // ITERAR SOBRE EL ARRAY DE PEDIDOS 
+    const grupo = document.createElement('UL');
+    grupo.classList.add('list-group');
+
+    const { pedido } = cliente;
+    pedido.forEach(articulo => {
+        const { nombre, cantidad, precio } = articulo;
+        const lista = document.createElement('LI');
+        lista.classList.add('list-group-item');
+        
+        //CANTIDAD DEL ARTICULO 
+        const  cantidadEl  = document.createElement('P');
+        cantidadEl.classList.add('fw-bold'); 
+        cantidadEl.textContent = `Cantidad: `; 
+        const  cantidadValor  = document.createElement('SPAN');
+        cantidadValor.classList.add('fw-normal'); 
+        cantidadValor.textContent = cantidad; 
+        // AGREGAR VALOR A SUS CONTENEDORES 
+        cantidadEl.appendChild(cantidadValor); 
+        
+        //Precio DEL ARTICULO 
+        const  precioEl  = document.createElement('P');
+        precioEl.classList.add('fw-bold'); 
+        precioEl.textContent = `Precio: `; 
+        const  precioValor  = document.createElement('SPAN');
+        precioValor.classList.add('fw-normal'); 
+        precioValor.textContent = `$ ${precio}`; 
+        // AGREGAR VALOR A SUS CONTENEDORES 
+        precioEl.appendChild(precioValor); 
+
+        const nombreEl = document.createElement('H4'); 
+        nombreEl.classList.add('my-4'); 
+        nombreEl.textContent = nombre; 
+
+        //Agregar elementos al li 
+        lista.appendChild(nombreEl); 
+        lista.appendChild(cantidadEl); 
+        lista.appendChild(precioEl); 
+
+
+        //Agregar lista al grupo principal 
+        grupo.appendChild(lista); 
+    });
+
+
+    resumen.appendChild(mesa);
+    resumen.appendChild(hora);
+    resumen.appendChild(heading);
+    resumen.appendChild(grupo);
+
+    contenido.appendChild(resumen);
+}
+
+function limpiarHtml() {
+    const contenido = document.querySelector('#resumen .contenido');
+    while (contenido.firstChild) {
+        contenido.removeChild(contenido.firstChild);
+    }
 }
